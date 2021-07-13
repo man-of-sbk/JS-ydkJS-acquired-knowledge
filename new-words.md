@@ -8,4 +8,7 @@
 * sufficiently: một cách đầy đủ.
 * abbreviate: viết tắt.
 * suboptimal: not optimal.
-* 
+* errantly: sai lầm.
+* sensible: hợp lý.
+* `clause`. Notably, `clause` : chú ý.
+* lexicographically: về mặt từ vựng.
