@@ -739,3 +739,132 @@ new foo();			// undefined
 * more information about this, see `Chapters 1 and 2` of the `this & Object Prototypes` title of this series.
 
 ## Prototypes
+* When you reference a `property` on an `object`, if that `property` `doesn't exist`, JavaScript will [...] use that object's `internal` `prototype` `reference` to `find another object` to look for the `property` [...] a fallback if the property is `missing`.
+
+* The `internal prototype reference linkage` from one `object` to `its` `fallback` happens at the time the object is `created`.
+
+```js
+var foo = {
+	a: 42
+};
+
+// create `bar` and link it to `foo`
+// (me: Object.create() creates a new object, using an argument object as the prototype of the newly created object)
+var bar = Object.create( foo );
+
+bar.b = "hello world";
+
+bar.b;		// "hello world"
+bar.a;		// 42 <-- delegated to `foo`
+```
+
+* `a` [...] doesn't actually exist on the `bar` object, but because `bar` is `prototype-linked` to `foo`, JavaScript automatically falls back to looking for `a` on the `foo` object.
+
+* more information [...] see `Chapters 4-6` of the `this & Object Prototypes` title of this series.
+
+## Old & New
+* two main techniques you can use to "bring" the `newer` JavaScript stuff to the `older browsers`:
+  * `polyfilling`
+  * `transpiling`.
+
+### Polyfilling
+* used to refer to [...] producing a piece of code that's equivalent [...] `but` is able to run in older JS environments.
+
+* `ES6` defines [...] `Number.isNaN(..)` to provide an accurate `non-buggy check` for `NaN` values, `deprecating` the original `isNaN(..)` [...] it's easy to polyfill that utility so that you can start using [...] regardless of [...] `ES6` browser or not.
+
+```js
+if (!Number.isNaN) {
+	Number.isNaN = function isNaN(x) {
+		return x !== x; // explained below
+	};
+}
+```
+
+* `a quirk` with `NaN` values [...] they're the `only value` [...] `not equal` `to itself` [...] the `only` one that would make `x !== x` be `true`.
+
+* `Not all` new features are fully `polyfillable`.
+* use an `already` vetted set of polyfills that you can trust, such as those provided by [ES5-Shim](https://github.com/es-shims/es5-shim).
+
+### Transpiling
+* There's `no` way to `polyfill` new `syntax` [...] The new `syntax` would throw an error in the old JS engine as unrecognized/invalid.
+* better option is to use a [...] "`transpiling`," a term for `transforming + compiling`.
+* Essentially, your source code is authored in the new `syntax` form, `but` what you `deploy to the browser` is the `transpiled code` in `old syntax` form. You typically insert the `transpiler` into your `build process`.
+
+* `ES6` adds a feature called "`default parameter values.`"
+
+```js
+function foo(a = 2) {
+	console.log( a );
+}
+
+foo();		// 2
+foo( 42 );	// 42
+```
+
+* what will a `transpiler` do with that code:
+
+```js
+function foo() {
+	var a = arguments[0] !== (void 0) ? arguments[0] : 2;
+	console.log( a );
+}
+```
+
+* `void 0` (aka `undefined`).
+* You may `not` have realized [...] `undefined` is the `only` value that `can't` get `explicitly passed in` for a `default-value parameter`.
+
+```js
+function foo(a = udefined) {
+	console.log( a );
+}
+
+foo(); // error: ReferenceError: udefined is not defined
+
+// =====
+
+function foo(a = null) {
+	console.log( a );
+}
+
+foo() // no error
+```
+
+* (me: `transpilers`)(they) should now be thought of as a `standard` part of the JS development ecosystem.
+* few great transpilers:
+  * `Babel` ([https://babeljs.io](https://babeljs.io)) (formerly `6to5`): Transpiles `ES6+` into `ES5`.
+  * `Traceur` ([https://github.com/google/traceur-compiler](https://github.com/google/traceur-compiler)).
+
+## Non-JavaScript
+* A good chunk of the stuff that you write in your code is, strictly speaking, not directly controlled by JavaScript.
+
+```js
+var el = document.getElementById( "foo" );
+```
+
+* `document` [...] a `global variable` [...] in a `browser` [...] `not` provided by the `JS engine` [...] It [...] looks [...] like a normal `JS object`, `but` it's `not` [...] It's a `special object`, often called a "`host object.`".
+* `getElementById(..)` method [...] looks like a normal JS `function`, `but` it's just a [...] interface to a built-in method provided by [...] browser. In some (`newer-generation`) browsers, this layer may also be in JS, `but` traditionally the DOM and its behavior is implemented in something more like `C/C++`.
+
+## Review
+
+# Chapter 3: Into YDKJS
+## Scope & Closures
+* The `Scope & Closures` title starts by `debunking` the common `misconception` that JS is an "`interpreted language`" and therefore `not compiled`. `Nope`.
+
+* `JS engine` `compiles` your code `right before` (and sometimes `during`!) `execution`.
+
+## this & Object Prototypes
+* The `this` keyword is dynamically bound based on `how` the function [...] `is executed` [...] there are `four` simple rules.
+
+* `prototype` mechanism [...] a `look-up chain` for `properties`.
+
+* the desire to bring `class` and `inheritance` design pattern thinking to JavaScript is just about the `worst thing` you could try to do [...] the `syntax` may trick you into thinking there's something like `classes` present, in fact the prototype mechanism is fundamentally opposite in its behavior.
+
+* `Delegation` is an entirely different, and more powerful, `design pattern`, one that `replaces` `the need to design` with `classes` and `inheritance`.
+
+## Types & Grammar
+## Async & Performance
+## ES6 & Beyond
+## Review
+
+# Appendix A: Thank You's!
+
