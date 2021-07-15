@@ -10,5 +10,7 @@
 * suboptimal: not optimal.
 * errantly: sai lầm.
 * sensible: hợp lý.
-* `clause`. Notably, `clause` : chú ý.
+* `a clause`. Notably, `a clause` : chú ý.
 * lexicographically: về mặt từ vựng.
+* undergo: trải qua.
+* `a clause`. In so doing, `a clause`: similar to `. As a result,`.
