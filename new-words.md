@@ -14,3 +14,5 @@
 * lexicographically: về mặt từ vựng.
 * undergo: trải qua.
 * `a clause`. In so doing, `a clause`: similar to `. As a result,`.
+* set in stone: impossible to change.
+* 

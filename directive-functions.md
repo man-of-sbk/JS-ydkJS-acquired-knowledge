@@ -5,3 +5,4 @@
   * `me`: my own contents which could be a side note, additional information, etc.
   * `NU`: not understand.
   * `CL`: continue later.
+  * `CL`: Check later.
