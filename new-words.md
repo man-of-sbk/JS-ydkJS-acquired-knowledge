@@ -20,4 +20,6 @@
 * reside: stay.
 * frown on/upon sth: to disapprove of something.
 * peculiar: unusual.
+* have sth over sb: know some fact or secret, some specific skill or position, that gives you power over that someone.
+* close over sth: to surround and cover something.
 * 
