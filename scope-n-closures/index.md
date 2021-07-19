@@ -976,4 +976,168 @@ foo.awesome(); // LET ME INTRODUCE: HIPPO
 ## Review (TL;DR)
 
 # Appendix A: Dynamic Scope
+* The key characteristic of `lexical scope` is that it is defined `at author-time`, when the code is written (assuming you `don't` cheat with `eval()` or `with`).
 
+```js
+function foo() {
+	console.log( a ); // 2
+}
+
+function bar() {
+	var a = 3;
+	foo();
+}
+
+var a = 2;
+
+bar();
+```
+
+* `Lexical scope` holds that the `RHS reference` to `a` in `foo()` will be resolved to the `global variable` `a`.
+
+* `Dynamic scope`, `by contrast` [...] is `based on` the `call-stack`, `not` the `nesting of scopes in code`.
+
+* `if` JavaScript had `dynamic scope`, when `foo()` is executed [...] the code below would `instead` result in `3` as the output.
+
+```js
+function foo() {
+	/* (me:
+		NOTE: Js does not adopt Dynamic Scope, so the correct logged value is 2, 3 will be logged instead IF Js adopts Dynamic Scope
+	) */
+	console.log( a ); // 3  (not 2!)
+}
+
+function bar() {
+	var a = 3;
+	foo();
+}
+
+var a = 2;
+
+bar();
+```
+
+* instead of stepping up the nested (`lexical`) `scope chain`, it walks up the `call-stack`, to find `where` `foo()` was `called from`. Since `foo()` was called from `bar()`, it checks the variables in scope for `bar()`, and finds an `a` there with value `3`.
+
+* `To be clear`, JavaScript `does not [...] have dynamic scope` [...] `But` the `this` mechanism is `kind of like dynamic scope`.
+
+* `Lexical scope` cares `where a function was declared`, but `dynamic scope` cares `where a function was called from`.
+
+* `this` cares `how a function was called` [...] closely related [...] to [...] `dynamic scoping`.
+
+# Appendix B: Polyfilling Block Scope
+* what if we wanted to use `block scope` in `pre-ES6` environments?
+
+```js
+try{throw 2}catch(a){
+	console.log( a ); // 2
+}
+
+console.log( a ); // ReferenceError
+```
+
+## Traceur
+## Implicit vs. Explicit Blocks
+```js
+// (me: Explicit Blocks)
+{
+	let a = 2;
+	console.log( a );
+}
+
+console.log( a ); // ReferenceError
+```
+
+## Performance
+* note on the `performance` of `try/catch`, and/or to address the question, "`why not just use an IIFE to create the scope?`".
+
+* Firstly [...] `try/catch` `is slower`, `but` [...] Since the `official TC39-approved` `ES6 transpiler` uses `try/catch`, the `Traceur` team has `asked` `Chrome` to improve the performance of `try/catch`, and they [...] do so.
+
+* Secondly, `IIFE` is not a fair apples-to-apples comparison with `try/catch`, because a function wrapped around any [...] code changes the meaning, `inside of that code`, of `this`, `return`, `break`, and `continue`.
+
+# Appendix C: Lexical-this
+* ES6 adds a special `syntactic form` of `function declaration` called the "`arrow function`".
+
+* But there's something much more important [...] `with arrow-functions` that has nothing to do with `saving keystrokes` in your declaration.
+
+* this code suffers a problem:
+
+```js
+
+var obj = {
+	id: "awesome",
+	cool: function coolFn() {
+		console.log( this.id );
+	}
+};
+
+var id = "not awesome";
+
+obj.cool(); // awesome
+
+setTimeout( obj.cool, 100 ); // not awesome
+```
+
+* The problem is the loss of `this` binding on the `cool()` function [...] various ways to address that problem, but one `often-repeated solution` is `var self = this;`.
+
+```js
+var obj = {
+	count: 0,
+	cool: function coolFn() {
+		var self = this;
+
+		if (self.count < 1) {
+			setTimeout( function timer(){
+				self.count++;
+				console.log( "awesome?" );
+			}, 100 );
+		}
+	}
+};
+
+obj.cool(); // awesome?
+```
+
+* the `var self = this` "solution" [...] falls back to [...] `lexical scope`. `self` [...] an identifier that can be resolved via `lexical scope` and `closure`, and cares `not` what happened to the `this` binding.
+
+* The `ES6 solution`, the `arrow-function`, introduces a behavior called "`lexical this`".
+
+```js
+var obj = {
+	count: 0,
+	cool: function coolFn() {
+		if (this.count < 1) {
+			setTimeout( () => { // arrow-function ftw?
+				this.count++;
+				console.log( "awesome?" );
+			}, 100 );
+		}
+	}
+};
+
+obj.cool(); // awesome?
+```
+
+* `arrow-functions` [...] discard `all` the normal rules for `this` binding [...] instead take on the `this` value of their `immediate lexical enclosing scope`.
+
+* So, in that snippet, the `arrow-function` doesn't get its `this` unbound in some `unpredictable way`, it just "`inherits`" the `this` binding of the `cool()` function.
+
+* A more appropriate approach, `in my perspective`.
+
+```js
+var obj = {
+	count: 0,
+	cool: function coolFn() {
+		if (this.count < 1) {
+			setTimeout( function timer(){
+				this.count++; // `this` is safe because of `bind(..)`
+				console.log( "more awesome" );
+			}.bind( this ), 100 ); // look, `bind()`!
+		}
+	}
+};
+
+obj.cool(); // more awesome
+```
+
+# Appendix D: Thank You's!
