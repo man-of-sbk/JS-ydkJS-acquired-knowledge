@@ -25,4 +25,6 @@
 * be preceded by: được theo sau bởi.
 * have/take precedence over: to be more important (than something else).
 * merely: just/only.
-*  
+* indices: plural of `index`.
+* `a clause`, and likewise with: similar with.
+* 
