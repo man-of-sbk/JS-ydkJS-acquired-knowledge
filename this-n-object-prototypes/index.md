@@ -1223,33 +1223,11 @@ Object.getOwnPropertyNames( myObject ); // ["a", "b"]
 * `Object.keys(..)` and `Object.getOwnPropertyNames(..)` `both` inspect `only` the `direct object specified`.
 
 ## Iteration
+* The `for..in` loop iterates over the list of `enumerable properties` on an object (`including` its `[[Prototype]]` chain). But what if you instead want to iterate over the values?
 
-The `for..in` loop iterates over the list of enumerable properties on an object (including its `[[Prototype]]` chain). But what if you instead want to iterate over the values?
+* `As contrasted with` iterating over an array's `indices` in a `numerically ordered` way [...] the `order` of iteration over an `object's properties` [...] may vary between different `JS engines`.
 
-With numerically-indexed arrays, iterating over the values is typically done with a standard `for` loop, like:
-
-```js
-var myArray = [1, 2, 3];
-
-for (var i = 0; i < myArray.length; i++) {
-	console.log( myArray[i] );
-}
-// 1 2 3
-```
-
-This isn't iterating over the values, though, but iterating over the indices, where you then use the index to reference the value, as `myArray[i]`.
-
-ES5 also added several iteration helpers for arrays, including `forEach(..)`, `every(..)`, and `some(..)`. Each of these helpers accepts a function callback to apply to each element in the array, differing only in how they respectively respond to a return value from the callback.
-
-`forEach(..)` will iterate over all values in the array, and ignores any callback return values. `every(..)` keeps going until the end *or* the callback returns a `false` (or "falsy") value, whereas `some(..)` keeps going until the end *or* the callback returns a `true` (or "truthy") value.
-
-These special return values inside `every(..)` and `some(..)` act somewhat like a `break` statement inside a normal `for` loop, in that they stop the iteration early before it reaches the end.
-
-If you iterate on an object with a `for..in` loop, you're also only getting at the values indirectly, because it's actually iterating only over the enumerable properties of the object, leaving you to access the properties manually to get the values.
-
-**Note:** As contrasted with iterating over an array's indices in a numerically ordered way (`for` loop or other iterators), the order of iteration over an object's properties is **not guaranteed** and may vary between different JS engines. **Do not rely** on any observed ordering for anything that requires consistency among environments, as any observed agreement is unreliable.
-
-But what if you want to iterate over the values directly instead of the array indices (or object properties)? Helpfully, ES6 adds a `for..of` loop syntax for iterating over arrays (and objects, if the object defines its own custom iterator):
+* if you want to iterate over the values `directly` [...] `ES6` adds a `for..of` loop syntax for iterating over `arrays` (and `objects`, `if` the object defines its own custom `iterator`):
 
 ```js
 var myArray = [ 1, 2, 3 ];
@@ -1262,9 +1240,9 @@ for (var v of myArray) {
 // 3
 ```
 
-The `for..of` loop asks for an iterator object (from a default internal function known as `@@iterator` in spec-speak) of the *thing* to be iterated, and the loop then iterates over the successive return values from calling that iterator object's `next()` method, once for each loop iteration.
+* The `for..of` loop asks for an `iterator` object (from a default `internal function` known as `@@iterator` [...]) of the `thing` `to be iterated`, and the `loop` then iterates over the `successive return values` from calling that `iterator object`'s `next()` method, `once` for `each loop iteration`.
 
-Arrays have a built-in `@@iterator`, so `for..of` works easily on them, as shown. But let's manually iterate the array, using the built-in `@@iterator`, to see how it works:
+* let's `manually` iterate the array, using the built-in `@@iterator`, to see how it works:
 
 ```js
 var myArray = [ 1, 2, 3 ];
@@ -1276,15 +1254,11 @@ it.next(); // { value:3, done:false }
 it.next(); // { done:true }
 ```
 
-**Note:** We get at the `@@iterator` *internal property* of an object using an ES6 `Symbol`: `Symbol.iterator`. We briefly mentioned `Symbol` semantics earlier in the chapter (see "Computed Property Names"), so the same reasoning applies here. You'll always want to reference such special properties by `Symbol` name reference instead of by the special value it may hold. Also, despite the name's implications, `@@iterator` is **not the iterator object** itself, but a **function that returns** the iterator object -- a subtle but important detail!
+* always [...] reference such special properties (me: like `@@iterator`) by `Symbol` name reference `instead` of by the [...] `value it [...] hold`. Also [...] `@@iterator` is `not the iterator object` itself, but a `function` that `returns the iterator object`.
 
-As the above snippet reveals, the return value from an iterator's `next()` call is an object of the form `{ value: .. , done: .. }`, where `value` is the current iteration value, and `done` is a `boolean` that indicates if there's more to iterate.
+* Notice the value `3` was returned with a `done:false` [...] You have to call the `next()` a `fourth time` ([...] the `for..of` loop [...] automatically does) to get `done:true`.
 
-Notice the value `3` was returned with a `done:false`, which seems strange at first glance. You have to call the `next()` a fourth time (which the `for..of` loop in the previous snippet automatically does) to get `done:true` and know you're truly done iterating. The reason for this quirk is beyond the scope of what we'll discuss here, but it comes from the semantics of ES6 generator functions.
-
-While arrays do automatically iterate in `for..of` loops, regular objects **do not have a built-in `@@iterator`**. The reasons for this intentional omission are more complex than we will examine here, but in general it was better to not include some implementation that could prove troublesome for future types of objects.
-
-It *is* possible to define your own default `@@iterator` for any object that you care to iterate over. For example:
+* `regular objects` `do not have` a `built-in @@iterator` [...] It is possible to define your own default `@@iterator` for `any object`.
 
 ```js
 var myObject = {
@@ -1325,36 +1299,376 @@ for (var v of myObject) {
 // 3
 ```
 
-**Note:** We used `Object.defineProperty(..)` to define our custom `@@iterator` (mostly so we could make it non-enumerable), but using the `Symbol` as a *computed property name* (covered earlier in this chapter), we could have declared it directly, like `var myObject = { a:2, b:3, [Symbol.iterator]: function(){ /* .. */ } }`.
+* We used `Object.defineProperty(..)` to define our custom `@@iterator` [...] so we could make it `non-enumerable`.
+* `but` [...] we could have declared it `directly`, like `var myObject = { a:2, b:3, [Symbol.iterator]: function(){ /* .. */ } }`.
 
-Each time the `for..of` loop calls `next()` on `myObject`'s iterator object, the internal pointer will advance and return back the next value from the object's properties list (see a previous note about iteration ordering on object properties/values).
+## Review (TL;DR)
 
-The iteration we just demonstrated is a simple value-by-value iteration, but you can of course define arbitrarily complex iterations for your custom data structures, as you see fit. Custom iterators combined with ES6's `for..of` loop are a powerful new syntactic tool for manipulating user-defined objects.
+# Chapter 4: Mixing (Up) "Class" Objects
+## Class Theory
+* `OO` or `class oriented programming` stresses that data [...] has associated `behavior` [...] so `proper design` is to [...] encapsulate [...] the data and the behavior together.
 
-For example, a list of `Pixel` objects (with `x` and `y` coordinate values) could decide to order its iteration based on the linear distance from the `(0,0)` origin, or filter out points that are "too far away", etc. As long as your iterator returns the expected `{ value: .. }` return values from `next()` calls, and a `{ done: true }` after the iteration is complete, ES6's `for..of` can iterate over it.
+* `Classes` also imply a way of `classifying` [...] Let's [...] looking at a commonly cited example. A `car` can be described as a `specific implementation` of a `more general` "class" [...] called a `vehicle`.
 
-In fact, you can even generate "infinite" iterators which never "finish" and always return a new value (such as a random number, an incremented value, a unique identifier, etc), though you probably will not use such iterators with an unbounded `for..of` loop, as it would never end and would hang your program.
+* The definition of `Vehicle` might include things like [...] the ability to carry people, etc. [...] all be the `behaviors`. What we define in `Vehicle` is all the stuff that is `common` [...] different types of vehicles (the "`planes`, `trains`, and `automobiles`").
+
+* we define that capability `once` in `Vehicle`, and then when we define `Car`, we simply indicate that it "`inherits`" (or "`extends`") the base definition from `Vehicle`.
+
+* Another key concept with classes is "`polymorphism`" [...] idea (me: is) that a general behavior from a `parent class` `can be overridden` in a `child class` [...] In fact, `relative polymorphism` lets us `reference` the `base behavior` `from the overridden behavior`.
+
+### "Class" Design Pattern
+* it's most common to [...] an assumption that [...] `OO` is a given foundation for *all* (proper) code.
+
+* "`procedural programming`" as a way of describing code which only consists of `procedures` (aka, `functions`) calling `other functions` [...] You may have been taught that `classes` were the *proper* way to transform `procedural-style` "`spaghetti code`" into well-formed, well-organized code.
+
+* (me: in) "`functional programming`" [...] `classes` are just one of several common `design patterns`.
+
+* languages (like Java) don't give you the choice [...] everything's a class. Other languages like `C/C++` or `PHP` give you both procedural and class-oriented syntaxes.
+
+### JavaScript "Classes"
+* But does [...] JavaScript actually *has* classes? [...] **No.**
+
+* classes are an `optional pattern` in software design, and you have the choice to use them in JavaScript or not
+
+## Class Mechanics
+### Building
+* A class is a `blue-print`. To actually `get` an object we can interact with, we must build (aka, "`instantiate`") something `from the class`. The end result of such "`construction`" is an `object`, [...] an "`instance`", which we can directly `call methods` on and `access` any public data properties from.
+
+### Constructor
+* Instances of classes are `constructed` by a special method of the class [...] a `constructor`. This method's [...] job is to (me: `receive arguments`, if there are ones and) `initialize` any information (`state`) the instance will need.
+
+## Class Inheritance
+* In class-oriented languages [...] you can define another class that **inherits** from the first class.
+
+* once a child class is defined [...] The child class contains an initial `copy` of the behavior from the parent, but can then `override` any `inherited behavior` and `even define new behavior`.
 
 ```js
-var randoms = {
-	[Symbol.iterator]: function() {
-		return {
-			next: function() {
-				return { value: Math.random() };
-			}
-		};
+class Vehicle {
+	engines = 1
+
+	ignition() {
+		output( "Turning on my engine." )
 	}
-};
 
-var randoms_pool = [];
-for (var n of randoms) {
-	randoms_pool.push( n );
+	drive() {
+		ignition()
+		output( "Steering and moving forward!" )
+	}
+}
 
-	// don't proceed unbounded!
-	if (randoms_pool.length === 100) break;
+class Car inherits Vehicle {
+	wheels = 4
+
+	drive() {
+		inherited:drive()
+		output( "Rolling on all ", wheels, " wheels!" )
+	}
+}
+
+class SpeedBoat inherits Vehicle {
+	engines = 2
+
+	ignition() {
+		output( "Turning on my ", engines, " engines." )
+	}
+
+	pilot() {
+		inherited:drive()
+		output( "Speeding through the water with ease!" )
+	}
 }
 ```
 
-This iterator will generate random numbers "forever", so we're careful to only pull out 100 values so our program doesn't hang.
+* For clarity [...] `constructors` for these classes have been `omitted`.
+
+### Polymorphism
+* `Polymorphism` is a much broader topic than we will exhaust here, but our current "`relative`" semantics refers to one particular aspect: the idea that `any method` can reference `another method` (of the `same` or `different name`) at a `higher level` of the `inheritance hierarchy`. We say "`relative`" because we don't [...] define which `inheritance level` (aka, `class`) we want to access, but rather relatively reference it by [...] "`look one level up`".
+
+* In many languages, the keyword `super` is used, in place of this example's `inherited:`, which leans on the idea that a "`super class`" is the `parent/ancestor` of the current class.
+
+* Another aspect of polymorphism is that a `method name` can have `multiple definitions` at `different levels of the inheritance chain` [...] We see two occurrences of that behavior in our example above: `drive()` is defined in both `Vehicle` and `Car`, and `ignition()` is defined in both `Vehicle` and `SpeedBoat`.
+
+* Another thing that [...] `class-oriented` languages give you via `super` is a direct way for the constructor of a `child class` to reference the constructor of `its parent class`.
+
+* Inside `pilot()`, a [...] reference is made to [...] `Vehicle`s version of `drive()`. `But` that `drive()` references an `ignition()` method `just by name` [...] Which version of `ignition()` will the language engine use, the one from `Vehicle` or the one from `SpeedBoat`? It uses the `SpeedBoat` version of `ignition()`. `If` you `were` to instantiate `Vehicle` class [...] and then call `its` `drive()`, the language engine would instead just use `Vehicle`s `ignition()` method.
+
+* When classes `are inherited`, there is a way `for the classes themselves` (`not` the `object instances` created from them!) to [...] reference the class `inherited from`, and this [...] `reference` is usually called `super`.
+
+* it would seem a `child class` [...] (me: `linked to`)(can `access`) behavior in `its parent class` [...] using a `relative polymorphic reference` (aka, `super`). `However` [...] the child class is merely given a `copy` of the `inherited behavior` `from its parent class`. If the child "`overrides`" (me: like `super().prop1 = 1` or `super().method1 = () => {}`) a method it inherits, `both` the `original` and `overridden versions` of the method are actually `maintained`, `so that` they are both accessible. [...] `Class inheritance implies copies`.
+
+```js
+// (me: a demonstration for the above argument by utilizing the "class" implementation of JS)
+class A {
+	a = 1
+}
+
+class B extends A {
+	constructor() {
+		/* (CL:
+			note that "super()" is similar to "A.call(this)" with:
+			"this" refers to the "instance of" "B" and
+			"A" is actually: "function A { this.a = 2; }"
+		) */
+		super().a = 2;
+	}
+}
+
+new B() // {a: 2} => the result of the override made via "super" is maintained
+new A() // {a: 1} => the original property value is also maintained
+```
+
+### Multiple Inheritance
+Recall our earlier discussion of parent(s) and children and DNA? We said that the metaphor was a bit weird because biologically most offspring come from two parents. If a class could inherit from two other classes, it would more closely fit the parent/child metaphor.
+
+Some class-oriented languages allow you to specify more than one "parent" class to "inherit" from. Multiple-inheritance means that each parent class definition is copied into the child class.
+
+On the surface, this seems like a powerful addition to class-orientation, giving us the ability to compose more functionality together. However, there are certainly some complicating questions that arise. If both parent classes provide a method called `drive()`, which version would a `drive()` reference in the child resolve to? Would you always have to manually specify which parent's `drive()` you meant, thus losing some of the gracefulness of polymorphic inheritance?
+
+There's another variation, the so called "Diamond Problem", which refers to the scenario where a child class "D" inherits from two parent classes ("B" and "C"), and each of those in turn inherits from a common "A" parent. If "A" provides a method `drive()`, and both "B" and "C" override (polymorph) that method, when `D` references `drive()`, which version should it use (`B:drive()` or `C:drive()`)?
+
+<img src="fig2.png">
+
+These complications go even much deeper than this quick glance. We address them here only so we can contrast to how JavaScript's mechanisms work.
+
+JavaScript is simpler: it does not provide a native mechanism for "multiple inheritance". Many see this as a good thing, because the complexity savings more than make up for the "reduced" functionality. But this doesn't stop developers from trying to fake it in various ways, as we'll see next.
+
+## Mixins
+
+JavaScript's object mechanism does not *automatically* perform copy behavior when you "inherit" or "instantiate". Plainly, there are no "classes" in JavaScript to instantiate, only objects. And objects don't get copied to other objects, they get *linked together* (more on that in Chapter 5).
+
+Since observed class behaviors in other languages imply copies, let's examine how JS developers **fake** the *missing* copy behavior of classes in JavaScript: mixins. We'll look at two types of "mixin": **explicit** and **implicit**.
+
+### Explicit Mixins
+
+Let's again revisit our `Vehicle` and `Car` example from before. Since JavaScript will not automatically copy behavior from `Vehicle` to `Car`, we can instead create a utility that manually copies. Such a utility is often called `extend(..)` by many libraries/frameworks, but we will call it `mixin(..)` here for illustrative purposes.
+
+```js
+// vastly simplified `mixin(..)` example:
+function mixin( sourceObj, targetObj ) {
+	for (var key in sourceObj) {
+		// only copy if not already present
+		if (!(key in targetObj)) {
+			targetObj[key] = sourceObj[key];
+		}
+	}
+
+	return targetObj;
+}
+
+var Vehicle = {
+	engines: 1,
+
+	ignition: function() {
+		console.log( "Turning on my engine." );
+	},
+
+	drive: function() {
+		this.ignition();
+		console.log( "Steering and moving forward!" );
+	}
+};
+
+var Car = mixin( Vehicle, {
+	wheels: 4,
+
+	drive: function() {
+		Vehicle.drive.call( this );
+		console.log( "Rolling on all " + this.wheels + " wheels!" );
+	}
+} );
+```
+
+**Note:** Subtly but importantly, we're not dealing with classes anymore, because there are no classes in JavaScript. `Vehicle` and `Car` are just objects that we make copies from and to, respectively.
+
+`Car` now has a copy of the properties and functions from `Vehicle`. Technically, functions are not actually duplicated, but rather *references* to the functions are copied. So, `Car` now has a property called `ignition`, which is a copied reference to the `ignition()` function, as well as a property called `engines` with the copied value of `1` from `Vehicle`.
+
+`Car` *already* had a `drive` property (function), so that property reference was not overridden (see the `if` statement in `mixin(..)` above).
+
+#### "Polymorphism" Revisited
+
+Let's examine this statement: `Vehicle.drive.call( this )`. This is what I call "explicit pseudo-polymorphism". Recall in our previous pseudo-code this line was `inherited:drive()`, which we called "relative polymorphism".
+
+JavaScript does not have (prior to ES6; see Appendix A) a facility for relative polymorphism. So, **because both `Car` and `Vehicle` had a function of the same name: `drive()`**, to distinguish a call to one or the other, we must make an absolute (not relative) reference. We explicitly specify the `Vehicle` object by name, and call the `drive()` function on it.
+
+But if we said `Vehicle.drive()`, the `this` binding for that function call would be the `Vehicle` object instead of the `Car` object (see Chapter 2), which is not what we want. So, instead we use `.call( this )` (Chapter 2) to ensure that `drive()` is executed in the context of the `Car` object.
+
+**Note:** If the function name identifier for `Car.drive()` hadn't overlapped with (aka, "shadowed"; see Chapter 5) `Vehicle.drive()`, we wouldn't have been exercising "method polymorphism". So, a reference to `Vehicle.drive()` would have been copied over by the `mixin(..)` call, and we could have accessed directly with `this.drive()`. The chosen identifier overlap **shadowing** is *why* we have to use the more complex *explicit pseudo-polymorphism* approach.
+
+In class-oriented languages, which have relative polymorphism, the linkage between `Car` and `Vehicle` is established once, at the top of the class definition, which makes for only one place to maintain such relationships.
+
+But because of JavaScript's peculiarities, explicit pseudo-polymorphism (because of shadowing!) creates brittle manual/explicit linkage **in every single function where you need such a (pseudo-)polymorphic reference**. This can significantly increase the maintenance cost. Moreover, while explicit pseudo-polymorphism can emulate the behavior of "multiple inheritance", it only increases the complexity and brittleness.
+
+The result of such approaches is usually more complex, harder-to-read, *and* harder-to-maintain code. **Explicit pseudo-polymorphism should be avoided wherever possible**, because the cost outweighs the benefit in most respects.
+
+#### Mixing Copies
+
+Recall the `mixin(..)` utility from above:
+
+```js
+// vastly simplified `mixin()` example:
+function mixin( sourceObj, targetObj ) {
+	for (var key in sourceObj) {
+		// only copy if not already present
+		if (!(key in targetObj)) {
+			targetObj[key] = sourceObj[key];
+		}
+	}
+
+	return targetObj;
+}
+```
+
+Now, let's examine how `mixin(..)` works. It iterates over the properties of `sourceObj` (`Vehicle` in our example) and if there's no matching property of that name in `targetObj` (`Car` in our example), it makes a copy. Since we're making the copy after the initial object exists, we are careful to not copy over a target property.
+
+If we made the copies first, before specifying the `Car` specific contents, we could omit this check against `targetObj`, but that's a little more clunky and less efficient, so it's generally less preferred:
+
+```js
+// alternate mixin, less "safe" to overwrites
+function mixin( sourceObj, targetObj ) {
+	for (var key in sourceObj) {
+		targetObj[key] = sourceObj[key];
+	}
+
+	return targetObj;
+}
+
+var Vehicle = {
+	// ...
+};
+
+// first, create an empty object with
+// Vehicle's stuff copied in
+var Car = mixin( Vehicle, { } );
+
+// now copy the intended contents into Car
+mixin( {
+	wheels: 4,
+
+	drive: function() {
+		// ...
+	}
+}, Car );
+```
+
+Either approach, we have explicitly copied the non-overlapping contents of `Vehicle` into `Car`. The name "mixin" comes from an alternate way of explaining the task: `Car` has `Vehicle`s contents **mixed-in**, just like you mix in chocolate chips into your favorite cookie dough.
+
+As a result of the copy operation, `Car` will operate somewhat separately from `Vehicle`. If you add a property onto `Car`, it will not affect `Vehicle`, and vice versa.
+
+**Note:** A few minor details have been skimmed over here. There are still some subtle ways the two objects can "affect" each other even after copying, such as if they both share a reference to a common object (such as an array).
+
+Since the two objects also share references to their common functions, that means that **even manual copying of functions (aka, mixins) from one object to another doesn't *actually emulate* the real duplication from class to instance that occurs in class-oriented languages**.
+
+JavaScript functions can't really be duplicated (in a standard, reliable way), so what you end up with instead is a **duplicated reference** to the same shared function object (functions are objects; see Chapter 3). If you modified one of the shared **function objects** (like `ignition()`) by adding properties on top of it, for instance, both `Vehicle` and `Car` would be "affected" via the shared reference.
+
+Explicit mixins are a fine mechanism in JavaScript. But they appear more powerful than they really are. Not much benefit is *actually* derived from copying a property from one object to another, **as opposed to just defining the properties twice**, once on each object. And that's especially true given the function-object reference nuance we just mentioned.
+
+If you explicitly mix-in two or more objects into your target object, you can **partially emulate** the behavior of "multiple inheritance", but there's no direct way to handle collisions if the same method or property is being copied from more than one source. Some developers/libraries have come up with "late binding" techniques and other exotic work-arounds, but fundamentally these "tricks" are *usually* more effort (and lesser performance!) than the pay-off.
+
+Take care only to use explicit mixins where it actually helps make more readable code, and avoid the pattern if you find it making code that's harder to trace, or if you find it creates unnecessary or unwieldy dependencies between objects.
+
+**If it starts to get *harder* to properly use mixins than before you used them**, you should probably stop using mixins. In fact, if you have to use a complex library/utility to work out all these details, it might be a sign that you're going about it the harder way, perhaps unnecessarily. In Chapter 6, we'll try to distill a simpler way that accomplishes the desired outcomes without all the fuss.
+
+#### Parasitic Inheritance
+
+A variation on this explicit mixin pattern, which is both in some ways explicit and in other ways implicit, is called "parasitic inheritance", popularized mainly by Douglas Crockford.
+
+Here's how it can work:
+
+```js
+// "Traditional JS Class" `Vehicle`
+function Vehicle() {
+	this.engines = 1;
+}
+Vehicle.prototype.ignition = function() {
+	console.log( "Turning on my engine." );
+};
+Vehicle.prototype.drive = function() {
+	this.ignition();
+	console.log( "Steering and moving forward!" );
+};
+
+// "Parasitic Class" `Car`
+function Car() {
+	// first, `car` is a `Vehicle`
+	var car = new Vehicle();
+
+	// now, let's modify our `car` to specialize it
+	car.wheels = 4;
+
+	// save a privileged reference to `Vehicle::drive()`
+	var vehDrive = car.drive;
+
+	// override `Vehicle::drive()`
+	car.drive = function() {
+		vehDrive.call( this );
+		console.log( "Rolling on all " + this.wheels + " wheels!" );
+	};
+
+	return car;
+}
+
+var myCar = new Car();
+
+myCar.drive();
+// Turning on my engine.
+// Steering and moving forward!
+// Rolling on all 4 wheels!
+```
+
+As you can see, we initially make a copy of the definition from the `Vehicle` "parent class" (object), then mixin our "child class" (object) definition (preserving privileged parent-class references as needed), and pass off this composed object `car` as our child instance.
+
+**Note:** when we call `new Car()`, a new object is created and referenced by `Car`s `this` reference (see Chapter 2). But since we don't use that object, and instead return our own `car` object, the initially created object is just discarded. So, `Car()` could be called without the `new` keyword, and the functionality above would be identical, but without the wasted object creation/garbage-collection.
+
+### Implicit Mixins
+
+Implicit mixins are closely related to *explicit pseudo-polymorphism* as explained previously. As such, they come with the same caveats and warnings.
+
+Consider this code:
+
+```js
+var Something = {
+	cool: function() {
+		this.greeting = "Hello World";
+		this.count = this.count ? this.count + 1 : 1;
+	}
+};
+
+Something.cool();
+Something.greeting; // "Hello World"
+Something.count; // 1
+
+var Another = {
+	cool: function() {
+		// implicit mixin of `Something` to `Another`
+		Something.cool.call( this );
+	}
+};
+
+Another.cool();
+Another.greeting; // "Hello World"
+Another.count; // 1 (not shared state with `Something`)
+```
+
+With `Something.cool.call( this )`, which can happen either in a "constructor" call (most common) or in a method call (shown here), we essentially "borrow" the function `Something.cool()` and call it in the context of `Another` (via its `this` binding; see Chapter 2) instead of `Something`. The end result is that the assignments that `Something.cool()` makes are applied against the `Another` object rather than the `Something` object.
+
+So, it is said that we "mixed in" `Something`s behavior with (or into) `Another`.
+
+While this sort of technique seems to take useful advantage of `this` rebinding functionality, it is the brittle `Something.cool.call( this )` call, which cannot be made into a relative (and thus more flexible) reference, that you should **heed with caution**. Generally, **avoid such constructs where possible** to keep cleaner and more maintainable code.
 
 ## Review (TL;DR)
+
+Classes are a design pattern. Many languages provide syntax which enables natural class-oriented software design. JS also has a similar syntax, but it behaves **very differently** from what you're used to with classes in those other languages.
+
+**Classes mean copies.**
+
+When traditional classes are instantiated, a copy of behavior from class to instance occurs. When classes are inherited, a copy of behavior from parent to child also occurs.
+
+Polymorphism (having different functions at multiple levels of an inheritance chain with the same name) may seem like it implies a referential relative link from child back to parent, but it's still just a result of copy behavior.
+
+JavaScript **does not automatically** create copies (as classes imply) between objects.
+
+The mixin pattern (both explicit and implicit) is often used to *sort of* emulate class copy behavior, but this usually leads to ugly and brittle syntax like explicit pseudo-polymorphism (`OtherObj.methodName.call(this, ...)`), which often results in harder to understand and maintain code.
+
+Explicit mixins are also not exactly the same as class *copy*, since objects (and functions!) only have shared references duplicated, not the objects/functions duplicated themselves. Not paying attention to such nuance is the source of a variety of gotchas.
+
+In general, faking classes in JS often sets more landmines for future coding than solving present *real* problems.
