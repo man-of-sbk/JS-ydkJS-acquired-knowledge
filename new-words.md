@@ -27,4 +27,7 @@
 * merely: just/only.
 * indices: plural of `index`.
 * `a clause`, and likewise with: similar with.
+* pseudo: pretended and not real.
+* relative: true to a particular degree when compared with other things.
+* absolute: true, right, or the same in all situations.
 * 
