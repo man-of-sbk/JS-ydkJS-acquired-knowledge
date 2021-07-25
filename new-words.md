@@ -30,4 +30,18 @@
 * pseudo: pretended and not real.
 * relative: true to a particular degree when compared with other things.
 * absolute: true, right, or the same in all situations.
+* descend from sth: to have developed from something that existed in the past.
+* round-about way: a not simple/direct way. 
+* an approximation of sth: a thing that is similar to something else, but is not exactly the same.
+* ancestry: series of ancestors.
+* transparently (in computing): (with reference to a process) without the user being aware.
+* substitute sth: use sth instead.
+* by virtue of: because or as a result of.
+* delegate sth to: give a particular job, duty, right, etc. to someone else so that they do it for you.
+* delegate (n): a person chosen by a group to do sth for them.
+* delegator: someone who delegates (= gives) part of their job, duties, etc. to someone else to do for them.
+* disambiguate: to show the differences between two or more meanings clearly.
+* mutually: done by two or more people or groups in the same way.
+* irrelevant: not important.
+* composition (in computing): combine functions to build more complicated ones.
 * 
