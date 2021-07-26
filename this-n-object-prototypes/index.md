@@ -2543,7 +2543,7 @@ AuthController.checkAuth();
 * We didn't need a base `Controller` class to "share" behavior between the two, because delegation [...] give us the functionality we need. We also [...] don't need to instantiate our classes to work with them [...] there's no need for *composition* as delegation gives the two objects the ability to cooperate *differentially* as needed [...] we avoided the `polymorphism pitfalls` of class-oriented design by not having the names `success(..)` and `failure(..)` be the same on both objects.
 
 ## Nicer Syntax
-One of the nicer things that makes ES6's `class` so deceptively attractive (see Appendix A on why to avoid it!) is the short-hand syntax for declaring class methods:
+* ES6's `class` so [...] attractive (see `Appendix A` on `why to avoid it`!) is the short-hand syntax for declaring class methods:
 
 ```js
 class Foo {
@@ -2551,11 +2551,9 @@ class Foo {
 }
 ```
 
-We get to drop the word `function` from the declaration, which makes JS developers everywhere cheer!
+* We get to drop the word `function` from the declaration, which makes JS developers everywhere cheer!
 
-And you may have noticed and been frustrated that the suggested OLOO syntax above has lots of `function` appearances, which seems like a bit of a detractor to the goal of OLOO simplification. **But it doesn't have to be that way!**
-
-As of ES6, we can use *concise method declarations* in any object literal, so an object in OLOO style can be declared this way (same short-hand sugar as with `class` body syntax):
+* As of ES6, we can use *concise method declarations* in any object literal, so an object in `OLOO` style can be declared this way.
 
 ```js
 var LoginController = {
@@ -2570,9 +2568,7 @@ var LoginController = {
 };
 ```
 
-About the only difference is that object literals will still require `,` comma separators between elements whereas `class` syntax doesn't. Pretty minor concession in the whole scheme of things.
-
-Moreover, as of ES6, the clunkier syntax you use (like for the `AuthController` definition), where you're assigning properties individually and not using an object literal, can be re-written using an object literal (so that you can use concise methods), and you can just modify that object's `[[Prototype]]` with `Object.setPrototypeOf(..)`, like this:
+* Moreover, as of `ES6` [...] you can just modify that object's `[[Prototype]]` with `Object.setPrototypeOf(..)`.
 
 ```js
 // use nicer object literal syntax w/ concise methods!
@@ -2591,70 +2587,9 @@ var AuthController = {
 Object.setPrototypeOf( AuthController, LoginController );
 ```
 
-OLOO-style as of ES6, with concise methods, **is a lot friendlier** than it was before (and even then, it was much simpler and nicer than classical prototype-style code). **You don't have to opt for class** (complexity) to get nice clean object syntax!
-
 ### Unlexical
-
-There *is* one drawback to concise methods that's subtle but important to note. Consider this code:
-
-```js
-var Foo = {
-	bar() { /*..*/ },
-	baz: function baz() { /*..*/ }
-};
-```
-
-Here's the syntactic de-sugaring that expresses how that code will operate:
-
-```js
-var Foo = {
-	bar: function() { /*..*/ },
-	baz: function baz() { /*..*/ }
-};
-```
-
-See the difference? The `bar()` short-hand became an *anonymous function expression* (`function()..`) attached to the `bar` property, because the function object itself has no name identifier. Compare that to the manually specified *named function expression* (`function baz()..`) which has a lexical name identifier `baz` in addition to being attached to a `.baz` property.
-
-So what? In the *"Scope & Closures"* title of this *"You Don't Know JS"* book series, we cover the three main downsides of *anonymous function expressions* in detail. We'll just briefly repeat them so we can compare to the concise method short-hand.
-
-Lack of a `name` identifier on an anonymous function:
-
-1. makes debugging stack traces harder
-2. makes self-referencing (recursion, event (un)binding, etc) harder
-3. makes code (a little bit) harder to understand
-
-Items 1 and 3 don't apply to concise methods.
-
-Even though the de-sugaring uses an *anonymous function expression* which normally would have no `name` in stack traces, concise methods are specified to set the internal `name` property of the function object accordingly, so stack traces should be able to use it (though that's implementation dependent so not guaranteed).
-
-Item 2 is, unfortunately, **still a drawback to concise methods**. They will not have a lexical identifier to use as a self-reference. Consider:
-
-```js
-var Foo = {
-	bar: function(x) {
-		if (x < 10) {
-			return Foo.bar( x * 2 );
-		}
-		return x;
-	},
-	baz: function baz(x) {
-		if (x < 10) {
-			return baz( x * 2 );
-		}
-		return x;
-	}
-};
-```
-
-The manual `Foo.bar(x*2)` reference above kind of suffices in this example, but there are many cases where a function wouldn't necessarily be able to do that, such as cases where the function is being shared in delegation across different objects, using `this` binding, etc. You would want to use a real self-reference, and the function object's `name` identifier is the best way to accomplish that.
-
-Just be aware of this caveat for concise methods, and if you run into such issues with lack of self-reference, make sure to forgo the concise method syntax **just for that declaration** in favor of the manual *named function expression* declaration form: `baz: function baz(){..}`.
-
 ## Introspection
-
-If you've spent much time with class oriented programming (either in JS or other languages), you're probably familiar with *type introspection*: inspecting an instance to find out what *kind* of object it is. The primary goal of *type introspection* with class instances is to reason about the structure/capabilities of the object based on *how it was created*.
-
-Consider this code which uses `instanceof` (see Chapter 5) for introspecting on an object `a1` to infer its capability:
+* If you've spent much time with class oriented programming [...] you're probably familiar with *type introspection*: inspecting an instance to find out [...] *how it was created*.
 
 ```js
 function Foo() {
@@ -2673,76 +2608,9 @@ if (a1 instanceof Foo) {
 }
 ```
 
-Because `Foo.prototype` (not `Foo`!) is in the `[[Prototype]]` chain (see Chapter 5) of `a1`, the `instanceof` operator (confusingly) pretends to tell us that `a1` is an instance of the `Foo` "class". With this knowledge, we then assume that `a1` has the capabilities described by the `Foo` "class".
+* `instanceof` (me: seems to inspect) [...] the relationship between `a1` and `Foo`, but it's actually telling us whether `a1` [...] `Foo.prototype` (me: see `Chapter 5`) are related [...] (me: which leads to `semantic confusion`).
 
-Of course, there is no `Foo` class, only a plain old normal function `Foo`, which happens to have a reference to an arbitrary object (`Foo.prototype`) that `a1` happens to be delegation-linked to. By its syntax, `instanceof` pretends to be inspecting the relationship between `a1` and `Foo`, but it's actually telling us whether `a1` and (the arbitrary object referenced by) `Foo.prototype` are related.
-
-The semantic confusion (and indirection) of `instanceof` syntax means that to use `instanceof`-based introspection to ask if object `a1` is related to the capabilities object in question, you *have to* have a function that holds a reference to that object -- you can't just directly ask if the two objects are related.
-
-Recall the abstract `Foo` / `Bar` / `b1` example from earlier in this chapter, which we'll abbreviate here:
-
-```js
-function Foo() { /* .. */ }
-Foo.prototype...
-
-function Bar() { /* .. */ }
-Bar.prototype = Object.create( Foo.prototype );
-
-var b1 = new Bar( "b1" );
-```
-
-For *type introspection* purposes on the entities in that example, using `instanceof` and `.prototype` semantics, here are the various checks you might need to perform:
-
-```js
-// relating `Foo` and `Bar` to each other
-Bar.prototype instanceof Foo; // true
-Object.getPrototypeOf( Bar.prototype ) === Foo.prototype; // true
-Foo.prototype.isPrototypeOf( Bar.prototype ); // true
-
-// relating `b1` to both `Foo` and `Bar`
-b1 instanceof Foo; // true
-b1 instanceof Bar; // true
-Object.getPrototypeOf( b1 ) === Bar.prototype; // true
-Foo.prototype.isPrototypeOf( b1 ); // true
-Bar.prototype.isPrototypeOf( b1 ); // true
-```
-
-It's fair to say that some of that kinda sucks. For instance, intuitively (with classes) you might want to be able to say something like `Bar instanceof Foo` (because it's easy to mix up what "instance" means to think it includes "inheritance"), but that's not a sensible comparison in JS. You have to do `Bar.prototype instanceof Foo` instead.
-
-Another common, but perhaps less robust, pattern for *type introspection*, which many devs seem to prefer over `instanceof`, is called "duck typing". This term comes from the adage, "if it looks like a duck, and it quacks like a duck, it must be a duck".
-
-Example:
-
-```js
-if (a1.something) {
-	a1.something();
-}
-```
-
-Rather than inspecting for a relationship between `a1` and an object that holds the delegatable `something()` function, we assume that the test for `a1.something` passing means `a1` has the capability to call `.something()` (regardless of if it found the method directly on `a1` or delegated to some other object). In and of itself, that assumption isn't so risky.
-
-But "duck typing" is often extended to make **other assumptions about the object's capabilities** besides what's being tested, which of course introduces more risk (aka, brittle design) into the test.
-
-One notable example of "duck typing" comes with ES6 Promises (which as an earlier note explained are not being covered in this book).
-
-For various reasons, there's a need to determine if any arbitrary object reference *is a Promise*, but the way that test is done is to check if the object happens to have a `then()` function present on it. In other words, **if any object** happens to have a `then()` method, ES6 Promises will assume unconditionally that the object **is a "thenable"** and therefore will expect it to behave conformantly to all standard behaviors of Promises.
-
-If you have any non-Promise object that happens for whatever reason to have a `then()` method on it, you are strongly advised to keep it far away from the ES6 Promise mechanism to avoid broken assumptions.
-
-That example clearly illustrates the perils of "duck typing". You should only use such approaches sparingly and in controlled conditions.
-
-Turning our attention once again back to OLOO-style code as presented here in this chapter, *type introspection* turns out to be much cleaner. Let's recall (and abbreviate) the `Foo` / `Bar` / `b1` OLOO example from earlier in the chapter:
-
-```js
-var Foo = { /* .. */ };
-
-var Bar = Object.create( Foo );
-Bar...
-
-var b1 = Object.create( Bar );
-```
-
-Using this OLOO approach, where all we have are plain objects that are related via `[[Prototype]]` delegation, here's the quite simplified *type introspection* we might use:
+* Using this OLOO approach, where all we have are plain objects that are related via `[[Prototype]]` delegation, here's the quite simplified *type introspection* we might use:
 
 ```js
 // relating `Foo` and `Bar` to each other
@@ -2755,8 +2623,145 @@ Bar.isPrototypeOf( b1 ); // true
 Object.getPrototypeOf( b1 ) === Bar; // true
 ```
 
-We're not using `instanceof` anymore, because it's confusingly pretending to have something to do with classes. Now, we just ask the (informally stated) question, "are you *a* prototype of me?" There's no more indirection necessary with stuff like `Foo.prototype` or the painfully verbose `Foo.prototype.isPrototypeOf(..)`.
-
-I think it's fair to say these checks are significantly less complicated/confusing than the previous set of introspection checks. **Yet again, we see that OLOO is simpler than (but with all the same power of) class-style coding in JavaScript.**
+* We're not using `instanceof` anymore, because it's `confusingly` pretending to have something to do with classes. Now, we just ask [...] "are you *a* prototype of me?".
 
 ## Review (TL;DR)
+
+# Appendix A: ES6 `class`
+## `class`
+* `class` mechanism. We'll demonstrate here how it works.
+
+```js
+class Widget {
+	constructor(width,height) {
+		this.width = width || 50;
+		this.height = height || 50;
+		this.$elem = null;
+	}
+	render($where){
+		if (this.$elem) {
+			this.$elem.css( {
+				width: this.width + "px",
+				height: this.height + "px"
+			} ).appendTo( $where );
+		}
+	}
+}
+
+class Button extends Widget {
+	constructor(width,height,label) {
+		super( width, height );
+		this.label = label || "Default";
+		this.$elem = $( "<button>" ).text( this.label );
+	}
+	render($where) {
+		super.render( $where );
+		this.$elem.click( this.onClick.bind( this ) );
+	}
+	onClick(evt) {
+		console.log( "Button '" + this.label + "' clicked!" );
+	}
+}
+```
+
+* Beyond this syntax *looking* nicer, `what problems` does ES6 solve?
+	1. There's no more [...] references to `.prototype`.
+	2. `Button` [...] `extends` [...] `Widget`, instead of needing to use `Object.create(..)` to replace a `.prototype` object that's linked, or having to set with `.__proto__` or `Object.setPrototypeOf(..)`.
+	3. `super(..)` now gives us a very helpful **relative polymorphism** capability.
+	4. `class` syntax is protecting you from mistakes (me: that it's state could be `implicitly` "shared" among all "instances)"
+	5. `extends` lets you extend even `built-in object` [...] like `Array` or `RegExp`, in a very natural way. Doing so `without` `class .. extends` has long been an [...] complex [...] task.
+
+## `class` Gotchas
+* though. There are still some deep [...] troubling issues with using "classes" as a design pattern in JS.
+
+* Firstly, the `class` syntax may convince you a new "class" mechanism `exists` in JS as of `ES6`. **Not so.** `class` is [...] just `syntactic sugar` on top of the existing `[[Prototype]]` (delegation!) mechanism.
+
+* That means `class` is `not` actually copying definitions [...] at declaration time the way it does in [...] class-oriented languages. If you change/replace a method (on purpose or by accident) on the parent "class", the `child "class"` and/or `instances` will still be "affected" [...] they are all still using the `live-delegation` model based on `[[Prototype]]`:
+
+```js
+class C {
+	constructor() {
+		this.num = Math.random();
+	}
+
+	// (CKL: Note: `methods` `not` declared inside the constructor method are indeed declared inside the prototype property of the class `C`)
+	rand() {
+		console.log( "Random: " + this.num );
+	}
+}
+
+var c1 = new C();
+c1.rand(); // "Random: 0.4324299..."
+
+C.prototype.rand = function() {
+	console.log( "Random: " + Math.round( this.num * 1000 ));
+};
+
+var c2 = new C();
+c2.rand(); // "Random: 867"
+
+c1.rand(); // "Random: 432" -- oops!!!
+```
+
+* why are you choosing `class` syntax for something `fundamentally` different from classes? Doesn't the ES6 `class` syntax **just make it harder** to see and understand the difference between traditional classes and delegated objects?
+
+* (me: secondly) if you need to do that to track shared state among instances, then you end up going back to the ugly `.prototype` syntax, like this:
+
+```js
+class C {
+	constructor() {
+		// make sure to modify the shared state,
+		// not set a shadowed property on the
+		// instances!
+		C.prototype.count++;
+
+		// here, `this.count` works as expected
+		// via delegation
+		console.log( "Hello: " + this.count );
+	}
+}
+
+// add a property for shared state directly to
+// prototype object
+C.prototype.count = 0;
+
+var c1 = new C();
+// Hello: 1
+
+var c2 = new C();
+// Hello: 2
+
+c1.count === 2; // true
+c1.count === c2.count; // true
+```
+
+* `this.count++` (me: `if` there is one) would `implicitly` create a separate shadowed `.count` property on both `c1` and `c2` objects, `rather than` updating `the` `shared state`. 
+
+* Moreover, `accidental shadowing` is still a hazard:
+
+```js
+class C {
+	constructor(id) {
+		// oops, gotcha, we're shadowing `id()` method
+		// with a property value on the instance
+		this.id = id;
+	}
+	id() {
+		console.log( "Id: " + this.id );
+	}
+}
+
+var c1 = new C( "c1" );
+c1.id(); // TypeError -- `c1.id` is now the string "c1"
+```
+
+* There's also some very subtle nuanced issues [...] is that `super` would `always` be bound to `one level higher` than whatever the current method's position in the `[[Prototype]]` chain is.
+
+* (WCRL|me)(for some reason, examples skipped below are inexecutable).
+
+## Static > Dynamic?
+* But the `biggest problem` of all about ES6 `class` is that [...] `class` sorta opts you into a syntax which seems to imply [...] that once you declare a `class`, it's a static `definition` of a [...] thing. You completely `lose sight` of the fact that `C` is an object [...] which you can directly interact with.
+
+## Review (TL;DR)
+
+# Appendix B: Thank You's!
