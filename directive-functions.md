@@ -6,5 +6,5 @@
   * `NU`: not understand.
   * `CL`: continue later.
   * `CKL`: Check later.
-  * `WCRL`: Extra information worth continue reading  later from where this directive is used.
+  * `WCRL`: Extra information worth continue reading later beginning from where this directive is used.
   * 
