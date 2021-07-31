@@ -49,4 +49,5 @@
 * deceptive: making you believe something that is not true.
 * Magnitude: In mathematics, the magnitude or size of a mathematical object is a property which determines whether the object is larger or smaller than other objects of the same kind.
 * be tolerant of sth: willing to accept behaviour of sth.
+* either: 1 trong 2.
 * 

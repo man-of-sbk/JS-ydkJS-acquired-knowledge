@@ -1325,9 +1325,9 @@ JSON.stringify( a, null, "-----" );
 
 * `ToNumber` for a `string` value essentially works [...] like the `rules/syntax for numeric literals` (see `Chapter 3` in the section talking about the `Number` native function) If it fails, the result is `NaN` [...] One [...] difference is that `0`-`prefixed octal numbers` are not handled as octals (just as normal `base-10 decimals`) in this operation, though such octals are valid as `number` literals (see Chapter 2).
 
-* Objects (and arrays) will first be converted to their `primitive value equivalent` (me: see how in the next argument), and the resulting value (if a primitive but `not already` a `number`) is coerced to a `number` according to the `ToNumber` rules just mentioned.
+* Objects (and arrays) (me: which are passed to the `ToNumber function`) will first be converted to their `primitive value equivalent` (me: see how in the next argument), and the resulting value (if a primitive but `not already` a `number`) is coerced to a `number` according to the `ToNumber` rules just mentioned.
 
-* To convert to this `primitive value equivalent`, the `ToPrimitive` abstract operation [...] will consult the value (using the internal `DefaultValue` operation -- ES5 spec, section 8.12.8) in question to see if it has a `valueOf()` method. If `valueOf()` is available and it returns a primitive value, *that* value is used for the coercion. If not, but `toString()` is available, (me: the `toString()` function)(it) will provide the value for the coercion [...] If neither operation can provide a primitive value, a `TypeError` is thrown.
+* To convert to this `primitive value equivalent`, (me: the rest of this argument indicate how the `ToPrimitive` works) the `ToPrimitive` abstract operation [...] will consult the value (using the internal `DefaultValue` operation -- ES5 spec, section 8.12.8) in question to see if it has a `valueOf()` method. If `valueOf()` is available and it returns a primitive value, *that* value is used for the coercion. If not, but `toString()` is available, (me: the `toString()` function)(it) will provide the value for the coercion [...] If neither operation can provide a primitive value, a `TypeError` is thrown.
 
 * As of ES5, you can create such a `noncoercible object` (me: an object without `valueOf()` and `toString()`) if it has a `null` value for its `[[Prototype]]`, typically created with `Object.create(null)`.
 
@@ -1587,10 +1587,7 @@ var b = a ? true : false;
 ## Implicit Coercion
 ### Simplifying Implicitly
 ### Implicitly: Strings <--> Numbers
-
-Earlier in this chapter, we explored *explicitly* coercing between `string` and `number` values. Now, let's explore the same task but with *implicit* coercion approaches. But before we do, we have to examine some nuances of operations that will *implicitly* force coercion.
-
-The `+` operator is overloaded to serve the purposes of both `number` addition and `string` concatenation. So how does JS know which type of operation you want to use? Consider:
+* The `+` operator is overloaded to serve the purposes of both `number` addition and `string` concatenation. So how does JS know which type of operation you want to use?
 
 ```js
 var a = "42";
@@ -1603,9 +1600,7 @@ a + b; // "420"
 c + d; // 42
 ```
 
-What's different that causes `"420"` vs `42`? It's a common misconception that the difference is whether one or both of the operands is a `string`, as that means `+` will assume `string` concatenation. While that's partially true, it's more complicated than that.
-
-Consider:
+* It's a common misconception that the difference is whether one or both of the operands is a `string`, as that means `+` will assume `string` concatenation. While that's partially true, it's more complicated than that.
 
 ```js
 var a = [1,2];
@@ -1614,44 +1609,20 @@ var b = [3,4];
 a + b; // "1,23,4"
 ```
 
-Neither of these operands is a `string`, but clearly they were both coerced to `string`s and then the `string` concatenation kicked in. So what's really going on?
+* Neither of these operands is a `string`, but clearly they were both coerced to `string`s and then the `string` concatenation kicked in. So what's really going on?
+	* (me: According to ES5 spec section 11.6.1, the `+` algorithm [...] first calls the `ToPrimitive` abstract operation (section 9.1) on (me: `both of the operands`), if an operand is a primitive value (`undefined`, `null`, `boolean`, `number`, `string`) the `toPrimitive` operation returns the operand itself, but if an operand is an `object`, then the operation calls the (me: read the `section 8.12.8` for a more detail look at the implemtation of the `[[DefaultValue]]` method as well as its hint)(`[[DefaultValue]]` algorithm with a context `hint` of `number`) then if either the value returned by the `DefaultValue` operation is a string, the `string` concatenation of the 2 `DefaultValue operation-returned values`, now converted to `strings` by the `ToString` method kicks in. `Otherwise`, a `numberic addition`, the addition of the 2 `DefaultValue operation-returned values`, now converted to number by the `ToNumber` method is performed)
 
-(**Warning:** deeply nitty gritty spec-speak coming, so skip the next two paragraphs if that intimidates you!)
+	* this operation (me: with the 2 `objects`, indeed 2 `arrays`) is now identical to how the `ToNumber` abstract operation handles `object`s (see the "`ToNumber`"" section earlier). The `valueOf()` operation on the `array` will fail to produce a simple primitive, so it then falls to a `toString()` representation. The two `array`s thus become `"1,2"` and `"3,4"`, respectively. Now, `+` concatenates the two `string`s as you'd normally expect: `"1,23,4"`.
 
------
+* simplified explanation: if either operand to `+` is a `string` (or becomes one with the `above steps`!), the operation will be `string` concatenation. `Otherwise`, it's `always numeric addition`.
 
-According to ES5 spec section 11.6.1, the `+` algorithm (when an `object` value is an operand) will concatenate if either operand is either already a `string`, or if the following steps produce a `string` representation. So, when `+` receives an `object` (including `array`) for either operand, it first calls the `ToPrimitive` abstract operation (section 9.1) on the value, which then calls the `[[DefaultValue]]` algorithm (section 8.12.8) with a context hint of `number`.
+* **Note:** A commonly cited coercion gotcha is `[] + {}` vs. `{} + []`, as those two expressions result, respectively, in `"[object Object]"` and `0`. There's more to it, though, and we cover those details in "Blocks" in `Chapter 5`.
 
-If you're paying close attention, you'll notice that this operation is now identical to how the `ToNumber` abstract operation handles `object`s (see the "`ToNumber`"" section earlier). The `valueOf()` operation on the `array` will fail to produce a simple primitive, so it then falls to a `toString()` representation. The two `array`s thus become `"1,2"` and `"3,4"`, respectively. Now, `+` concatenates the two `string`s as you'd normally expect: `"1,23,4"`.
+* What's that mean for *implicit* coercion? [...] You can coerce a `number` to a `string` simply by "adding" the `number` and the `""` empty `string`
 
------
+* Comparing this *implicit* coercion of `a + ""` to our earlier example of `String(a)` *explicit* coercion (me: with `a` returning an `object` only, check the `(me)` section in the example below), there's one additional quirk to be aware of. Because of how the `ToPrimitive` abstract operation works, `a + ""` invokes `valueOf()` on the `a` value, whose return value is then finally converted to a `string` via the internal `ToString` abstract operation. But `String(a)` just invokes `toString()` directly.
 
-Let's set aside those messy details and go back to an earlier, simplified explanation: if either operand to `+` is a `string` (or becomes one with the above steps!), the operation will be `string` concatenation. Otherwise, it's always numeric addition.
-
-**Note:** A commonly cited coercion gotcha is `[] + {}` vs. `{} + []`, as those two expressions result, respectively, in `"[object Object]"` and `0`. There's more to it, though, and we cover those details in "Blocks" in Chapter 5.
-
-What's that mean for *implicit* coercion?
-
-You can coerce a `number` to a `string` simply by "adding" the `number` and the `""` empty `string`:
-
-```js
-var a = 42;
-var b = a + "";
-
-b; // "42"
-```
-
-**Tip:** Numeric addition with the `+` operator is commutative, which means `2 + 3` is the same as `3 + 2`. String concatenation with `+` is obviously not generally commutative, **but** with the specific case of `""`, it's effectively commutative, as `a + ""` and `"" + a` will produce the same result.
-
-It's extremely common/idiomatic to (*implicitly*) coerce `number` to `string` with a `+ ""` operation. In fact, interestingly, even some of the most vocal critics of *implicit* coercion still use that approach in their own code, instead of one of its *explicit* alternatives.
-
-**I think this is a great example** of a useful form in *implicit* coercion, despite how frequently the mechanism gets criticized!
-
-Comparing this *implicit* coercion of `a + ""` to our earlier example of `String(a)` *explicit* coercion, there's one additional quirk to be aware of. Because of how the `ToPrimitive` abstract operation works, `a + ""` invokes `valueOf()` on the `a` value, whose return value is then finally converted to a `string` via the internal `ToString` abstract operation. But `String(a)` just invokes `toString()` directly.
-
-Both approaches ultimately result in a `string`, but if you're using an `object` instead of a regular primitive `number` value, you may not necessarily get the *same* `string` value!
-
-Consider:
+* Both approaches ultimately result in a `string`, but if you're using an `object` instead of a regular primitive `number` value, you may not necessarily get the *same* `string` value!
 
 ```js
 var a = {
