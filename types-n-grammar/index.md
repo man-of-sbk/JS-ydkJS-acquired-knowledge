@@ -2091,15 +2091,11 @@ a >= b;	// true
 * **Note:** The term "grammar" may be a little less familiar to readers than the term "syntax." In many ways, they are similar terms, describing the *rules* for how the language works.
 
 ## Statements & Expressions
-It's fairly common for developers to assume that the term "statement" and "expression" are roughly equivalent. But here we need to distinguish between the two, because there are some very important differences in our JS programs.
+* It's fairly common [...] to assume that [...] "statement" and "expression" are roughly equivalent. But here we need to distinguish between the two, because there are some very important differences in our JS programs [...] To draw the distinction, let's borrow from terminology you may be more familiar with: the English language.
 
-To draw the distinction, let's borrow from terminology you may be more familiar with: the English language.
+* A "sentence" is one complete formation of words that expresses a thought. It's comprised of one or more "phrases," each of which can be connected with punctuation marks or conjunction words ("and," "or," etc) [...] These rules are collectively called the *grammar* of the English language.
 
-A "sentence" is one complete formation of words that expresses a thought. It's comprised of one or more "phrases," each of which can be connected with punctuation marks or conjunction words ("and," "or," etc). A phrase can itself be made up of smaller phrases. Some phrases are incomplete and don't accomplish much by themselves, while other phrases can stand on their own. These rules are collectively called the *grammar* of the English language.
-
-And so it goes with JavaScript grammar. Statements are sentences, expressions are phrases, and operators are conjunctions/punctuation.
-
-Every expression in JS can be evaluated down to a single, specific value result. For example:
+* And so it goes with JavaScript grammar. Statements are sentences, expressions are phrases, and operators are conjunctions/punctuation.
 
 ```js
 var a = 3 * 6;
@@ -2107,35 +2103,20 @@ var b = a;
 b;
 ```
 
-In this snippet, `3 * 6` is an expression (evaluates to the value `18`). But `a` on the second line is also an expression, as is `b` on the third line. The `a` and `b` expressions both evaluate to the values stored in those variables at that moment, which also happens to be `18`.
+* `3 * 6` is an expression (evaluates to the value `18`). But `a` on the second line is also an expression, as is `b` on the third line.
 
-Moreover, each of the three lines is a statement containing expressions. `var a = 3 * 6` and `var b = a` are called "declaration statements" because they each declare a variable (and optionally assign a value to it). The `a = 3 * 6` and `b = a` assignments (minus the `var`s) are called assignment expressions.
+* each of the three lines is a statement containing expressions. `var a = 3 * 6` and `var b = a` are called "`declaration statements`" because they each declare a variable (and optionally assign a value to it). The `a = 3 * 6` and `b = a` assignments (minus the `var`s) are called `assignment expressions`.
 
-The third line contains just the expression `b`, but it's also a statement all by itself (though not a terribly interesting one!). This is generally referred to as an "expression statement."
+* The third line contains just the expression `b`, but it's also a statement all by itself [...] This is generally referred to as an "`expression statement`."
 
 ### Statement Completion Values
+* It's a fairly little known fact that statements all have completion values (even if that value is just `undefined`).
 
-It's a fairly little known fact that statements all have completion values (even if that value is just `undefined`).
+* The `b = a` assignment expression results in the value that was assigned (`18` above), but the `var` statement itself results in `undefined`. Why? Because `var` statements are defined that way in the spec [...] Technically [...] In the ES5 spec, section 12.2 "Variable Statement," the `VariableDeclaration` algorithm actually *does* return a value (a `string` containing the name of the variable declared [...]), but that value is [...] swallowed up (except for use by the `for..in` loop) by the `VariableStatement` algorithm, which forces an empty (aka `undefined`) completion value.
 
-How would you even go about seeing the completion value of a statement?
+* So how can we capture the completion value? [...] Before we explain *how*, let's explore *why* you would want to do that.
 
-The most obvious answer is to type the statement into your browser's developer console, because when you execute it, the console by default reports the completion value of the most recent statement it executed.
-
-Let's consider `var b = a`. What's the completion value of that statement?
-
-The `b = a` assignment expression results in the value that was assigned (`18` above), but the `var` statement itself results in `undefined`. Why? Because `var` statements are defined that way in the spec. If you put `var a = 42;` into your console, you'll see `undefined` reported back instead of `42`.
-
-**Note:** Technically, it's a little more complex than that. In the ES5 spec, section 12.2 "Variable Statement," the `VariableDeclaration` algorithm actually *does* return a value (a `string` containing the name of the variable declared -- weird, huh!?), but that value is basically swallowed up (except for use by the `for..in` loop) by the `VariableStatement` algorithm, which forces an empty (aka `undefined`) completion value.
-
-In fact, if you've done much code experimenting in your console (or in a JavaScript environment REPL -- read/evaluate/print/loop tool), you've probably seen `undefined` reported after many different statements, and perhaps never realized why or what that was. Put simply, the console is just reporting the statement's completion value.
-
-But what the console prints out for the completion value isn't something we can use inside our program. So how can we capture the completion value?
-
-That's a much more complicated task. Before we explain *how*, let's explore *why* you would want to do that.
-
-We need to consider other types of statement completion values. For example, any regular `{ .. }` block has a completion value of the completion value of its last contained statement/expression.
-
-Consider:
+* any regular `{ .. }` block has a completion value of the completion value of its `last contained statement/expression`.
 
 ```js
 var b;
@@ -2145,13 +2126,7 @@ if (true) {
 }
 ```
 
-If you typed that into your console/REPL, you'd probably see `42` reported, since `42` is the completion value of the `if` block, which took on the completion value of its last assignment expression statement `b = 4 + 38`.
-
-In other words, the completion value of a block is like an *implicit return* of the last statement value in the block.
-
-**Note:** This is conceptually familiar in languages like CoffeeScript, which have implicit `return` values from `function`s that are the same as the last statement value in the function.
-
-But there's an obvious problem. This kind of code doesn't work:
+* If you typed that into your console [...] you'd probably see `42`[...] since `42` is the completion value of the `if` block [...] took on the completion value of its last assignment expression statement `b = 4 + 38` [...] But there's an obvious problem. This kind of code doesn't work:
 
 ```js
 var a, b;
@@ -2161,13 +2136,9 @@ a = if (true) {
 };
 ```
 
-We can't capture the completion value of a statement and assign it into another variable in any easy syntactic/grammatical way (at least not yet!).
+* We can't capture the completion value of a statement and assign it into another variable [...] (at least not yet!) [...] So, what can we do?
 
-So, what can we do?
-
-**Warning**: For demo purposes only -- don't actually do the following in your real code!
-
-We could use the much maligned `eval(..)` (sometimes pronounced "evil") function to capture this completion value.
+* **Warning**: For demo purposes only -- don't actually do the following in your real code! [...] We could use [...] `eval(..)` (sometimes pronounced "evil") function to capture this completion value.
 
 ```js
 var a, b;
@@ -2177,9 +2148,7 @@ a = eval( "if (true) { b = 4 + 38; }" );
 a;	// 42
 ```
 
-Yeeeaaahhhh. That's terribly ugly. But it works! And it illustrates the point that statement completion values are a real thing that can be captured not just in our console but in our programs.
-
-There's a proposal for ES7 called "do expression." Here's how it might work:
+* There's a proposal for ES7 called "do expression." Here's how it might work:
 
 ```js
 var a, b;
@@ -2193,13 +2162,11 @@ a = do {
 a;	// 42
 ```
 
-The `do { .. }` expression executes a block (with one or many statements in it), and the final statement completion value inside the block becomes the completion value *of* the `do` expression, which can then be assigned to `a` as shown.
+* The `do { .. }` expression executes a block [...] and the final statement completion value inside the block becomes the completion value *of* the `do` expression.
 
-The general idea is to be able to treat statements as expressions -- they can show up inside other statements -- without needing to wrap them in an inline function expression and perform an explicit `return ..`.
+* The general idea is to be able to treat statements as expressions [...] without needing to wrap them in an inline function expression and perform an explicit `return ...`.
 
-For now, statement completion values are not much more than trivia. But they're probably going to take on more significance as JS evolves, and hopefully `do { .. }` expressions will reduce the temptation to use stuff like `eval(..)`.
-
-**Warning:** Repeating my earlier admonition: avoid `eval(..)`. Seriously. See the *Scope & Closures* title of this series for more explanation.
+* **Warning:** [...] avoid `eval(..)`. Seriously. See the *Scope & Closures* title of this series for more explanation.
 
 ### Expression Side Effects
 
@@ -3451,21 +3418,3 @@ The way this snippet processes is that it passes through all the `case` clause m
 While this sort of round-about logic is clearly possible in JavaScript, there's almost no chance that it's going to make for reasonable or understandable code. Be very skeptical if you find yourself wanting to create such circular logic flow, and if you really do, make sure you include plenty of code comments to explain what you're up to!
 
 ## Review
-
-JavaScript grammar has plenty of nuance that we as developers should spend a little more time paying closer attention to than we typically do. A little bit of effort goes a long way to solidifying your deeper knowledge of the language.
-
-Statements and expressions have analogs in English language -- statements are like sentences and expressions are like phrases. Expressions can be pure/self-contained, or they can have side effects.
-
-The JavaScript grammar layers semantic usage rules (aka context) on top of the pure syntax. For example, `{ }` pairs used in various places in your program can mean statement blocks, `object` literals, (ES6) destructuring assignments, or (ES6) named function arguments.
-
-JavaScript operators all have well-defined rules for precedence (which ones bind first before others) and associativity (how multiple operator expressions are implicitly grouped). Once you learn these rules, it's up to you to decide if precedence/associativity are *too implicit* for their own good, or if they will aid in writing shorter, clearer code.
-
-ASI (Automatic Semicolon Insertion) is a parser-error-correction mechanism built into the JS engine, which allows it under certain circumstances to insert an assumed `;` in places where it is required, was omitted, *and* where insertion fixes the parser error. The debate rages over whether this behavior implies that most `;` are optional (and can/should be omitted for cleaner code) or whether it means that omitting them is making mistakes that the JS engine merely cleans up for you.
-
-JavaScript has several types of errors, but it's less known that it has two classifications for errors: "early" (compiler thrown, uncatchable) and "runtime" (`try..catch`able). All syntax errors are obviously early errors that stop the program before it runs, but there are others, too.
-
-Function arguments have an interesting relationship to their formal declared named parameters. Specifically, the `arguments` array has a number of gotchas of leaky abstraction behavior if you're not careful. Avoid `arguments` if you can, but if you must use it, by all means avoid using the positional slot in `arguments` at the same time as using a named parameter for that same argument.
-
-The `finally` clause attached to a `try` (or `try..catch`) offers some very interesting quirks in terms of execution processing order. Some of these quirks can be helpful, but it's possible to create lots of confusion, especially if combined with labeled blocks. As always, use `finally` to make code better and clearer, not more clever or confusing.
-
-The `switch` offers some nice shorthand for `if..else if..` statements, but beware of many common simplifying assumptions about its behavior. There are several quirks that can trip you up if you're not careful, but there's also some neat hidden tricks that `switch` has up its sleeve!
