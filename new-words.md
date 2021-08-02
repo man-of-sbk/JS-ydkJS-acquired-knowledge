@@ -52,4 +52,6 @@
 * either: 1 trong 2.
 * association: a group of people organized for a joint purpose.
 * workaround: a method for overcoming a problem or limitation in a program or system. 
+* get in line: To become straight; to form into a line or row.
+* purview: the scope of the influence or concerns of something.
 * 
