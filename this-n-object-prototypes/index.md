@@ -726,7 +726,7 @@ console.log( strPrimitive.charAt( 3 ) );	// "m"
 
 * `null` and `undefined` have `no object wrapper` form [...] By contrast, `Date` values can `only` be created with their `constructed object form`.
 
-`Object`s, `Array`s, `Function`s, and `RegExp`s [...] are all objects `regardless of` whether the `literal` or `constructed form` is used.
+* `Object`s, `Array`s, `Function`s, and `RegExp`s [...] are all objects `regardless of` whether the `literal` or `constructed form` is used.
 
 * `Error` [...] can be created with the `constructed form` `new Error(..)`, but it's often unnecessary.
 
